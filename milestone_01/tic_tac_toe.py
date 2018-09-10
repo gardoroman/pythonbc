@@ -1,11 +1,8 @@
-ttt = ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+ttt = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
 
 
 def print_board():
     board = ''
-    # for row in ttt:
-    #     print_row = ['[' + i + ']' for i in row]
-    #     board += ''.join(print_row) + '\n'
 
     for i in range(0, 3):
         row = ttt[i * 3:(i + 1) * 3]
@@ -15,54 +12,103 @@ def print_board():
     return board
 
 
-def check_sub_array(sub_array, token):
-    return {token} == set(sub_array)
+def check_sub_list(sub_list, token):
+    # print("check sub list")
+    for i in sub_list:
+        if i != token:
+            return False
+    return True
 
 
-def is_sub_array_valid()
-
-
-def directional_search(row, col):
+def is_sub_list_valid(position, token):
     '''
-    parameter based search
-    horizontal, if position 
+    check position for all its rows
+    if any row is a winning row,
+    return true
     '''
+    (pos_quotient, pos_remainder) = divmod(position, 3)
+    if pos_remainder == 0:
+        horizontal_list = ttt[position: position + 3:]
+        horizontal_check = check_sub_list(horizontal_list, token)
+        if horizontal_check:
+            return True
+
+    if pos_quotient == 0:
+        vertical_list = ttt[position::3]
+        vertical_check = check_sub_list(vertical_list, token)
+        if vertical_check:
+            return True
+        if position == 0:
+            diagonal_lr_list = ttt[0::4]
+            diagonal_lr_check = check_sub_list(diagonal_lr_list, token)
+            if diagonal_lr_check:
+                return True
+        if position == 2:
+            diagonal_rl_list = ttt[-3:1:-2]
+            print(f"list is {diagonal_rl_list}")
+            diagonal_rl_check = check_sub_list(diagonal_rl_list, token)
+            if diagonal_rl_check:
+                return True
+        return False
 
 
 def check_for_winner(token):
     '''
-    get subset of three and run set() 
+    get subset of three and run set()
     to see if the set only has a length
     of 1 and is equal to that token
     '''
+    positions = [i for i, item in enumerate(ttt) if item == token]
 
-    for position in ttt:
+    if len(positions) < 3:
+        return False
+
+    for position in positions:
         '''
         loop through each index,
-        and generate a sub_array for
+        and generate a sub_list for
         horizontal, vertical, and diagonal
-        if valid sub_array check if it's valid
+        if valid sub_list check if it's valid
         '''
+        result = is_sub_list_valid(int(position), token)
+        if result:
+            return True
 
 
-def get_input(player, token):
-    player_input = input(
-        player + f" player {player} please select position number or 'q' to quit: ")
-    ttt[int(player_input)] = token
+def get_input(player):
+    '''
+    Receives token of the current player.
+    Calls functions to 
+    '''
+    valid_move = False
+    while not valid_move:
+        player_input = input(
+            f" player {player} please select an empty position or press 'q' to quit: ")
+
+        if player_input == 'q':
+            return 'q'
+        elif ttt[int(player_input)] == ' ':
+            ttt[int(player_input)] = player
+            valid_move = True
 
     print_board()
-    check_for_winner(token)
-    return 'q'
+    return check_for_winner(player)
 
 
-is_unfinished = True
+current_player = "x"
 
-while is_unfinished:
-    player_one = get_input("one", 'x')
-    player_one = get_input("two", 'o')
+finished = False
 
-    # ttt[int(row), int(col)] = 'x'
-    # print(ttt[0][0])
+while not finished:
+    play = get_input(current_player)
     print(print_board())
-    if player_one == 'q':
-        is_unfinished = False
+    if play == 'q':
+        finished = True
+    elif play == True:
+        if play == True:
+            print(f'player {current_player} wins!')
+        finished = True
+    if current_player == "x":
+        current_player = "o"
+    else:
+        current_player = "x"
