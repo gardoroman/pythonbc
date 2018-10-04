@@ -25,11 +25,45 @@ class BlackJack:
 
         return cards
 
-    def show_hands(self):
+    def check_cards(self, cards):
+        card_count = 0
+        for card in cards:
+            card_count += card[1]
+        return card_count
+
+    def prompt_player(self):
+        keep_hitting = True
+        print(f'\n\nplayer hand is {self.player.hand}')
+        while keep_hitting:
+            choice = input("type 'h' for hit or 's' for stand:  ")
+            if choice == 'h':
+                self.player.hand += self.draw_cards(1)
+                # draw cards
+                # add points
+                card_count = self.check_cards(self.player.hand)
+                self.format_hands(self.player.hand)
+                print(f'current total: {card_count}')
+            else:
+                print("It is now the dealers turn")
+                keep_hitting = False
+
+    def format_hands(self, cards):
+        card_string = ' '
+        for card in cards:
+            card_string += '[' + card[0] + '] '
+        print(card_string)
+
+    def show_hands(self, hide_card=False):
         # need to handle when to show dealers other cards
-        print(
-            f"player's hands: [{self.player.hand[0][0]}] [{self.player.hand[1][0]}]")
-        print(f"dealer's hands: [{self.dealer_hand[0][0]}] [?]")
+        # print(
+        #     f"player's hands: [{self.player.hand[0][0]}] [{self.player.hand[1][0]}]")
+        # print(f"dealer's hands: [{self.dealer_hand[0][0]}] [?]")
+
+        self.format_hands(self.player.hand)
+        if hide_card:
+            print(f' [{self.dealer_hand[0][0]}] [?]')
+        else:
+            self.format_hands(self.dealer_hand)
 
     def deal(self, min_cards=4):
         '''
@@ -39,14 +73,14 @@ class BlackJack:
         '''
         keep_playing = True
         print(len(self.deck.card_deck))
-
         while keep_playing:
             if len(self.deck.card_deck) <= min_cards:
                 keep_playing = False
             self.deck.shuffle_deck()
             self.player.hand = self.draw_cards(2)
             self.dealer_hand = self.draw_cards(2)
-            self.show_hands()
+            self.show_hands(True)
+            self.prompt_player()
             print(len(self.deck.card_deck))
             keep_playing = False
 
@@ -68,4 +102,3 @@ class BlackJack:
 if __name__ == '__main__':
     blackjack = BlackJack()
     blackjack.initialize_game()
-    print(blackjack.player.total)
