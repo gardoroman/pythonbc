@@ -1,17 +1,19 @@
-# import player
+
 from player import *
 from deck import *
 
-'''
-one player vs automated dealer
-player can hit or stand
-player must be able to pick betting amount
-keep track of players money
-alert player to wins, busts, or losses
-'''
+# import player
+# import deck
 
 
 class BlackJack:
+    '''
+    one player vs automated dealer
+    player can hit or stand
+    player must be able to pick betting amount
+    keep track of players money
+    alert player to wins, busts, or losses
+    '''
 
     def __init__(self):
         # self.player = Player()
@@ -33,19 +35,32 @@ class BlackJack:
 
     def prompt_player(self):
         keep_hitting = True
-        print(f'\n\nplayer hand is {self.player.hand}')
+        # print(f'\n\nplayer hand is {self.format_hands(self.player.hand)}')
+        is_game_over = False
         while keep_hitting:
-            choice = input("type 'h' for hit or 's' for stand:  ")
+            choice = input("\ntype 'h' for hit or 's' for stand:  ")
             if choice == 'h':
                 self.player.hand += self.draw_cards(1)
                 # draw cards
                 # add points
-                card_count = self.check_cards(self.player.hand)
+                self.player.score = self.check_cards(self.player.hand)
+                print(f'total points: {self.player.score}')
                 self.format_hands(self.player.hand)
-                print(f'current total: {card_count}')
+                if self.player.score > 20:
+                    is_game_over = True
+                    keep_hitting = False
+                    if self.player.score > 21:
+                        result = self.bet_amount * -1
+                    elif self.player.score == 21:
+                        result = self.bet_amount
+
+                    self.player.update_info(result)
+
             else:
                 print("It is now the dealers turn")
                 keep_hitting = False
+
+        return is_game_over
 
     def format_hands(self, cards):
         card_string = ' '
@@ -76,27 +91,54 @@ class BlackJack:
         while keep_playing:
             if len(self.deck.card_deck) <= min_cards:
                 keep_playing = False
+            self.bet_amount = self.get_amount("How much will you bet?  ")
+            self.player.bet(self.bet_amount)
             self.deck.shuffle_deck()
             self.player.hand = self.draw_cards(2)
             self.dealer_hand = self.draw_cards(2)
             self.show_hands(True)
-            self.prompt_player()
+            is_game_over = self.prompt_player()
+            if not is_game_over:
+                self.automate_dealer()
             print(len(self.deck.card_deck))
             keep_playing = False
 
-    def initialize_game(self):
+    def automate_dealer(self):
+        print("The dealer plays")
+        keep_hitting = True
+        while keep_hitting:
+            self.format_hands(self.dealer_hand)
+            dealer_score = self.check_cards(self.dealer_hand)
+            if dealer_score > 20:
+                keep_hitting = False
+                if dealer_score > 21:
+                    result = self.bet_amount
+                    print("You win")
+                elif dealer_score == 21:
+                    # self.player.wins += 1
+                    print("Dealer wins")
+                    keep_hitting = False
+                    result = self.bet_amount * -1
+                self.player.update_info(result)
+            self.dealer_hand += self.draw_cards(1)
+
+    def get_amount(self, msg):
         while True:
             try:
-                starting_amount = float(input("Enter starting bet:  "))
-                if starting_amount < 0:
+                total_amount = float(input(msg))
+                if total_amount < 0:
                     raise ValueError
             except:
                 print("Amount must be a positive number")
             else:
                 break
+        return total_amount
 
-        self.player = Player(starting_amount)
+    def initialize_game(self):
+        total_amount = self.get_amount("How much do you have to bet?  ")
+        self.player = Player(total_amount)
         self.deal()
+        print(self.player.total)
 
 
 if __name__ == '__main__':
