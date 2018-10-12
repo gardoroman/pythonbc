@@ -28,7 +28,7 @@ class BlackJack:
 
         return cards
 
-    def check_cards(self, cards):
+    def get_score(self, cards):
         card_count = 0
         for card in cards:
             card_count += card[1]
@@ -73,7 +73,7 @@ class BlackJack:
             #     self.player.hand += self.draw_cards(1)
                 # draw cards
                 # add points
-            self.player.score = self.check_cards(self.player.hand)
+            self.player.score = self.get_score(self.player.hand)
             #  = self.handle_aces(self.player.hand)
             print(f'total points: {self.player.score}')
 
@@ -129,7 +129,9 @@ class BlackJack:
         print(len(self.deck.card_deck))
         while keep_playing:
             if len(self.deck.card_deck) <= min_cards:
+                print("out of cards")
                 keep_playing = False
+            
             self.bet_amount = self.get_amount("How much will you bet?  ")
             self.player.bet(self.bet_amount)
             # self.deck.shuffle_deck()
@@ -141,69 +143,53 @@ class BlackJack:
             is_game_over = self.prompt_player()
             print(f'gameover {is_game_over}')
             if not is_game_over:
-                self.automate_dealer()
+                return self.automate_dealer()
+            
             print(len(self.deck.card_deck))
             keep_playing = False
 
 
         
 
-    def automate_dealer(self):
-        '''
-        TODO: determine why dealer score does not update
-        the draw condition works
-        other conditions are trigger an infinite  loop
-        
-        '''
+    def automate_dealer(self, min_cards=4):
+
         print("The dealer plays")
         keep_hitting = True
         player_score = self.player.score
+        # player_score = 15
+        # self.dealer_hand = [['4', 4], ['7', 7], ['A', 11]]
+
         while keep_hitting:
+            if len(self.deck.card_deck) <= min_cards:
+                print("out of cards")
+                keep_hitting = False
             aces = self.dealer_hand.count(self.ace)
             self.format_hands(self.dealer_hand)
-            dealer_score = self.check_cards(self.dealer_hand)
+            dealer_score = self.get_score(self.dealer_hand)
             print(f"dealer score {dealer_score}")
             
 
             if dealer_score < 17:
-                print("under 17")
-                # continue
-            elif 16 < dealer_score < player_score and aces == 0:
-                print("d l")
+                self.dealer_hand += self.draw_cards(1)
+            elif dealer_score < player_score:
                 result = self.bet_amount
                 keep_hitting = False             
-            elif 16 < dealer_score < player_score and aces > 0:
-                print("keep hitt")
-                # continue
-            elif 16 < dealer_score == player_score:
-                print("Draw")
-                result = 0
-                keep_hitting = False
-            elif 16 < player_score < dealer_score < 22:
-                print("loss")
+            elif player_score < dealer_score < 22:
                 result = self.bet_amount * -1
                 keep_hitting = False
-            elif 16 < player_score < 21 < dealer_score and aces == 0:
-                print("dl bust")
+            elif dealer_score > 21 and aces == 0:
                 result = self.bet_amount
-                keep_hitting = False
-            elif 16 < player_score < 21 < dealer_score and aces:
-                print("dl 21+ w ace")
+                keep_hitting = False             
+            elif dealer_score > 21 and aces > 0:
                 self.handle_aces(self.dealer_hand)
-
-            elif dealer_score > 21:
-                print('test busts')
-                result = -2
+            elif 16 < dealer_score == player_score:
+                result = 0
                 keep_hitting = False
+
 
             if not keep_hitting:
-                print("in not keep hittin")
                 self.player.update_info(result)
-            else:
-                print('here???')
-                self.dealer_hand += self.draw_cards(1)
-                print(self.dealer_hand)
-
+                return False
                 
 
     def get_amount(self, msg):
@@ -221,12 +207,22 @@ class BlackJack:
     def initialize_game(self):
         '''
         Create while loop to continue game
+        get the result form first game and give option to continue
         '''
-        total_amount = self.get_amount("How much do you have to bet?  ")
-        self.deck.shuffle_deck()
-        self.player = Player(total_amount)
-        self.deal()
-        print(self.player.total)
+        keep_playing = True
+        while keep_playing:
+            total_amount = self.get_amount("How much do you have to bet?  ")
+            self.deck.shuffle_deck()
+            self.player = Player(total_amount)
+            keep_playing = self.deal()
+            if not keep_playing:
+                msg = "Keep playing 'y' or 'n'"
+                player_response = input(msg)
+                if player_response == 'y':
+                    keep_playing = True
+                else:
+                    print('Game Over')
+                    print(self.player.total)
 
 
 if __name__ == '__main__':
