@@ -210,10 +210,10 @@ class BlackJack:
         get the result form first game and give option to continue
         '''
         keep_playing = True
+        total_amount = self.get_amount("How much do you want to bet?  ")
+        self.player = Player(total_amount)
         while keep_playing:
-            total_amount = self.get_amount("How much do you have to bet?  ")
             self.deck.shuffle_deck()
-            self.player = Player(total_amount)
             keep_playing = self.deal()
             if not keep_playing:
                 msg = "Keep playing 'y' or 'n'"
